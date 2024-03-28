@@ -16,6 +16,7 @@ services:
       retries: 5
   app:
     build: .
+    command: ["bash", "start.sh"]
     ports:
       - '3000:3000'
     env_file:
