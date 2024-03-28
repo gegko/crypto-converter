@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { AppInitializationService } from './app-initialization/app-initialization.service';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   dotenv.config();
@@ -21,6 +22,14 @@ async function bootstrap() {
     }),
   );
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  const config = new DocumentBuilder()
+    .setTitle('Crypto converter')
+    .setDescription('Converter API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
   await app.listen(3000);
 }
 bootstrap();
