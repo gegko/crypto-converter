@@ -7,5 +7,6 @@ export class AppInitializationService {
 
   async initialize() {
     await this.bybitService.createBaseCurrency();
+    await this.bybitService.addMajorCurrencies();
   }
 }

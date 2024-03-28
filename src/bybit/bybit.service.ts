@@ -18,16 +18,24 @@ export class BybitService {
     });
   }
 
-  async getRates(symbol: string) {
+  async getCurenciesExceptUsdtArray(): Promise<string[]> {
+    const currencies = await this.database.currencyRate.findMany({
+      select: { currencyName: true },
+      where: { NOT: { currencyName: 'USDT' } },
+    });
+    return currencies.map((currency) => currency.currencyName);
+  }
+
+  async getRates(symbol: string): Promise<number> {
     try {
       const response = await this.client.getTickers({
         category: 'spot',
         symbol: symbol,
       });
       const lastPrice = response.result.list[0].lastPrice;
-      return lastPrice;
+      return +lastPrice;
     } catch (error) {
-      console.error('An error occured: ', error.message);
+      console.error('An error occured (getRates): ', error.message);
     }
   }
 
@@ -50,45 +58,64 @@ export class BybitService {
     await this.upsertRates(data, 'USDT');
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async getTonRates() {
-    const tonPrice = await this.getRates('TONUSDT');
-    if (tonPrice) {
-      const data = {
-        baseCurrency: 'USDT',
-        currencyName: 'TON',
-        rate: +tonPrice,
-      };
-      await this.upsertRates(data, 'TON');
-    }
-    return tonPrice;
+  async upsertCurrenciesFromArray(currencies: string[]) {
+    currencies.forEach(async (currency) => {
+      const price = await this.getRates(currency + 'USDT');
+
+      if (price) {
+        const data = {
+          baseCurrency: 'USDT',
+          currencyName: currency,
+          rate: price,
+        };
+        await this.upsertRates(data, currency);
+      }
+    });
+  }
+
+  async addMajorCurrencies() {
+    const currencies = ['TON', 'BTC', 'ETH'];
+    await this.upsertCurrenciesFromArray(currencies);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async getBtcRates() {
-    const btcPrice = await this.getRates('BTCUSDT');
-    if (btcPrice) {
-      const data = {
-        baseCurrency: 'USDT',
-        currencyName: 'BTC',
-        rate: +btcPrice,
-      };
-      await this.upsertRates(data, 'BTC');
-    }
-    return btcPrice;
+  async fetchAllRates() {
+    const currencies = await this.getCurenciesExceptUsdtArray();
+    await this.upsertCurrenciesFromArray(currencies);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async getEthRates() {
-    const ethPrice = await this.getRates('ETHUSDT');
-    if (ethPrice) {
+  async isValidCurrency(symbol: string): Promise<boolean> {
+    try {
+      const response = await this.client.getTickers({
+        category: 'spot',
+        symbol: symbol.toUpperCase() + 'USDT',
+      });
+      return response.retMsg == 'OK';
+    } catch (error) {
+      console.error('An error occured (isValidCurrency): ', error.message);
+      return false;
+    }
+  }
+
+  async createNewCurrency(symbol: string) {
+    if (!(await this.isValidCurrency(symbol))) {
+      throw new Error(`${symbol} is not a valid currency.`);
+    }
+    try {
+      const response = await this.client.getTickers({
+        category: 'spot',
+        symbol: symbol.toUpperCase() + 'USDT',
+      });
+      const lastPrice = response.result.list[0].lastPrice;
       const data = {
         baseCurrency: 'USDT',
-        currencyName: 'ETH',
-        rate: +ethPrice,
+        currencyName: symbol.toUpperCase(),
+        rate: +lastPrice,
       };
-      await this.upsertRates(data, 'ETH');
+      await this.upsertRates(data, symbol);
+    } catch (error) {
+      console.error('An error occured (createNewCurrency): ', error.message);
+      throw new Error(`${symbol} is not a valid currency.`);
     }
-    return ethPrice;
   }
 }

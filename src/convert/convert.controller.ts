@@ -26,7 +26,7 @@ export class ConvertController {
   ) {
     const { from, to } = currencyParamDto;
     let rate = await this.cacheManager.get(from + to);
-    console.log(rate);
+
     if (!rate) {
       rate = await this.convertService.getFromToRate(from, to);
       const remainingTime = this.timeUntilEndOfMinute();

@@ -26,7 +26,6 @@ async function bootstrap() {
     .setTitle('Crypto converter')
     .setDescription('Converter API description')
     .setVersion('1.0')
-    .addTag('cats')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

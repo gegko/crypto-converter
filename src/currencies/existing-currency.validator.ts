@@ -21,7 +21,10 @@ export class ExistingCurrencyValidator implements ValidatorConstraintInterface {
         .then((arr) => arr.map((currency) => currency.currencyName));
       return currencies.includes(symbol.toUpperCase());
     } catch (error) {
-      console.error('An error occured: ', error.message);
+      console.error(
+        'An error occured (ExistingCurrencyValidator): ',
+        error.message,
+      );
       return false;
     }
   }

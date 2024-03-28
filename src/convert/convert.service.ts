@@ -23,8 +23,7 @@ export class ConvertService {
       const toRate = await this.getCurrentRate(to.toUpperCase());
       return fromRate / toRate;
     } catch (error) {
-      console.log(error);
-      console.error('An error occured: ', error.message);
+      console.error('An error occured (getFromToRate): ', error.message);
     }
   }
 }
