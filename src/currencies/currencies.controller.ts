@@ -7,8 +7,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { CurrenciesService } from './currencies.service';
-import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { BybitService } from 'src/bybit/bybit.service';
+import { BybitService } from '../bybit/bybit.service';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 
 @Controller('currencies')

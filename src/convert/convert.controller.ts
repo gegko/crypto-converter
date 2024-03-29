@@ -1,9 +1,9 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ConvertService } from './convert.service';
-import { AmountQueryDto } from 'src/common/dto/amount-query.dto';
-import { CurrencyParamDto } from 'src/currencies/dto/currency-param.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { CurrencyParamDto } from '../currencies/dto/currency-param.dto';
+import { AmountQueryDto } from '../common/dto/amount-query.dto';
 
 @Controller('convert')
 export class ConvertController {

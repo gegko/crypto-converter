@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RestClientV5 } from 'bybit-api';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { CurrencyUpsertDto } from './dto/currency-upsert.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class BybitService {
@@ -101,21 +101,12 @@ export class BybitService {
     if (!(await this.isValidCurrency(symbol))) {
       throw new Error(`${symbol} is not a valid currency.`);
     }
-    try {
-      const response = await this.client.getTickers({
-        category: 'spot',
-        symbol: symbol.toUpperCase() + 'USDT',
-      });
-      const lastPrice = response.result.list[0].lastPrice;
-      const data = {
-        baseCurrency: 'USDT',
-        currencyName: symbol.toUpperCase(),
-        rate: +lastPrice,
-      };
-      await this.upsertRates(data, symbol);
-    } catch (error) {
-      console.error('An error occured (createNewCurrency): ', error.message);
-      throw new Error(`${symbol} is not a valid currency.`);
-    }
+    const lastPrice = this.getRates(symbol.toUpperCase() + 'USDT');
+    const data = {
+      baseCurrency: 'USDT',
+      currencyName: symbol.toUpperCase(),
+      rate: +lastPrice,
+    };
+    await this.upsertRates(data, symbol);
   }
 }

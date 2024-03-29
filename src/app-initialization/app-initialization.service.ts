@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BybitService } from 'src/bybit/bybit.service';
+import { BybitService } from '../bybit/bybit.service';
 
 @Injectable()
 export class AppInitializationService {
