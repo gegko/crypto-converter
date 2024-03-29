@@ -13,20 +13,13 @@ export class ExistingCurrencyValidator implements ValidatorConstraintInterface {
   constructor(private readonly database: PrismaService) {}
 
   async validate(symbol: string) {
-    try {
-      const currencies = await this.database.currencyRate
-        .findMany({
-          select: { currencyName: true },
-        })
-        .then((arr) => arr.map((currency) => currency.currencyName));
-      return currencies.includes(symbol.toUpperCase());
-    } catch (error) {
-      console.error(
-        'An error occured (ExistingCurrencyValidator): ',
-        error.message,
-      );
-      return false;
+    const currency = await this.database.currencyRate.findFirst({
+      where: { currencyName: symbol.toUpperCase() },
+    });
+    if (currency) {
+      return true;
     }
+    return false;
   }
 
   defaultMessage() {
